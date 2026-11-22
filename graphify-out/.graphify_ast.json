@@ -4335,6 +4335,17 @@
       "contributor": null
     },
     {
+      "id": "controllers_graphcut_graphcut_helpbtn_callback",
+      "label": "helpBtn_Callback",
+      "file_type": "code",
+      "source_file": "+controllers\\@Graphcut\\Graphcut.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "controllers_graphcut_graphcut_closewindow",
       "label": "closeWindow",
       "file_type": "code",
@@ -4535,6 +4546,17 @@
     {
       "id": "controllers_graphcut_graphcut_recalcgraph_callback",
       "label": "recalcGraph_Callback",
+      "file_type": "code",
+      "source_file": "+controllers\\@Graphcut\\Graphcut.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "controllers_graphcut_graphcut_weightbycontactcheck_callback",
+      "label": "weightByContactCheck_Callback",
       "file_type": "code",
       "source_file": "+controllers\\@Graphcut\\Graphcut.m",
       "source_location": null,
@@ -23145,6 +23167,17 @@
       "contributor": null
     },
     {
+      "id": "plugins_myplugins_membraneinstances_membraneinstances_destinationoptions_m",
+      "label": "destinationOptions.m",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\@MembraneInstances\\destinationOptions.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "plugins_myplugins_membraneinstances_membraneinstances_editridgetable_m",
       "label": "editRidgeTable.m",
       "file_type": "code",
@@ -23248,6 +23281,17 @@
       "label": "joinRidge.m",
       "file_type": "code",
       "source_file": "plugins\\MyPlugins\\MembraneInstances\\@MembraneInstances\\joinRidge.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_membraneinstances_membraneinstances_jumptoprevious_m",
+      "label": "jumpToPrevious.m",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\@MembraneInstances\\jumpToPrevious.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -23622,6 +23666,17 @@
       "label": "writeFragmentBox.m",
       "file_type": "code",
       "source_file": "plugins\\MyPlugins\\MembraneInstances\\@MembraneInstances\\writeFragmentBox.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_membraneinstances_membraneinstances_writefullresolution_m",
+      "label": "writeFullResolution.m",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\@MembraneInstances\\writeFullResolution.m",
       "source_location": null,
       "source_url": null,
       "captured_at": null,
@@ -24135,6 +24190,28 @@
       "contributor": null
     },
     {
+      "id": "plugins_myplugins_membraneinstances_membraneinstances_membraneinstances_getexcludemask",
+      "label": "getExcludeMask",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\@MembraneInstances\\MembraneInstances.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_membraneinstances_membraneinstances_membraneinstances_maskfilesize",
+      "label": "maskFileSize",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\@MembraneInstances\\MembraneInstances.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "plugins_myplugins_membraneinstances_membraneinstances_membraneinstances_showstatus",
       "label": "showStatus",
       "file_type": "code",
@@ -24168,8 +24245,63 @@
       "contributor": null
     },
     {
-      "id": "plugins_myplugins_membraneinstances_membraneinstances_membraneinstances_selectprojectfolderbutton",
-      "label": "selectProjectFolderButton",
+      "id": "plugins_myplugins_membraneinstances_membraneinstances_membraneinstances_selectprojectfilebutton",
+      "label": "selectProjectFileButton",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\@MembraneInstances\\MembraneInstances.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_membraneinstances_membraneinstances_membraneinstances_choosenewprojectfile",
+      "label": "chooseNewProjectFile",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\@MembraneInstances\\MembraneInstances.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_membraneinstances_membraneinstances_membraneinstances_projectfiletyped",
+      "label": "projectFileTyped",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\@MembraneInstances\\MembraneInstances.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_membraneinstances_membraneinstances_membraneinstances_projectfilepath",
+      "label": "projectFilePath",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\@MembraneInstances\\MembraneInstances.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_membraneinstances_membraneinstances_membraneinstances_projectfieldname",
+      "label": "projectFieldName",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\@MembraneInstances\\MembraneInstances.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_membraneinstances_membraneinstances_membraneinstances_projectstartfolder",
+      "label": "projectStartFolder",
       "file_type": "code",
       "source_file": "plugins\\MyPlugins\\MembraneInstances\\@MembraneInstances\\MembraneInstances.m",
       "source_location": null,
@@ -24311,6 +24443,17 @@
       "contributor": null
     },
     {
+      "id": "plugins_myplugins_membraneinstances_membraneinstances_membraneinstances_cappedcellstext",
+      "label": "cappedCellsText",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\@MembraneInstances\\MembraneInstances.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "plugins_myplugins_membraneinstances_membraneinstances_membraneinstances_reportproblem",
       "label": "reportProblem",
       "file_type": "code",
@@ -24401,6 +24544,28 @@
     {
       "id": "plugins_myplugins_membraneinstances_membraneinstances_membraneinstances_localpressbutton",
       "label": "localPressButton",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\@MembraneInstances\\MembraneInstances.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_membraneinstances_membraneinstances_membraneinstances_localframevalue",
+      "label": "localFrameValue",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\@MembraneInstances\\MembraneInstances.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_membraneinstances_membraneinstances_membraneinstances_localunpackframe",
+      "label": "localUnpackFrame",
       "file_type": "code",
       "source_file": "plugins\\MyPlugins\\MembraneInstances\\@MembraneInstances\\MembraneInstances.m",
       "source_location": null,
@@ -30108,6 +30273,17 @@
       "contributor": null
     },
     {
+      "id": "utils_dlgs_selectmodeltypedlg_typeofbutton",
+      "label": "typeOfButton",
+      "file_type": "code",
+      "source_file": "+utils\\+dlgs\\selectModelTypeDlg.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "utils_dlgs_selectmodeltypedlg_onselectionchanged",
       "label": "onSelectionChanged",
       "file_type": "code",
@@ -34409,6 +34585,50 @@
       "contributor": null
     },
     {
+      "id": "plugins_myplugins_membraneinstances_membraneinstancesproject_locate",
+      "label": "locate",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\MembraneInstancesProject.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_membraneinstances_membraneinstancesproject_datanames",
+      "label": "dataNames",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\MembraneInstancesProject.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_membraneinstances_membraneinstancesproject_projectfilesin",
+      "label": "projectFilesIn",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\MembraneInstancesProject.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_membraneinstances_membraneinstancesproject_folderof",
+      "label": "folderOf",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\MembraneInstancesProject.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "plugins_myplugins_membraneinstances_membraneinstancesproject_isproject",
       "label": "isProject",
       "file_type": "code",
@@ -34596,6 +34816,50 @@
       "contributor": null
     },
     {
+      "id": "plugins_myplugins_membraneinstances_membraneinstancesproject_mapinfopaths",
+      "label": "mapInfoPaths",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\MembraneInstancesProject.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_membraneinstances_membraneinstancesproject_relativepath",
+      "label": "relativePath",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\MembraneInstancesProject.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_membraneinstances_membraneinstancesproject_absolutepath",
+      "label": "absolutePath",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\MembraneInstancesProject.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_membraneinstances_membraneinstancesproject_describefiles",
+      "label": "describeFiles",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\MembraneInstancesProject.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "plugins_myplugins_membraneinstances_membraneinstancesproject_savereplacing",
       "label": "saveReplacing",
       "file_type": "code",
@@ -34609,6 +34873,28 @@
     {
       "id": "plugins_myplugins_membraneinstances_membraneinstancesproject_timestamp",
       "label": "timestamp",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\MembraneInstancesProject.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_membraneinstances_membraneinstancesproject_localisabsolute",
+      "label": "localIsAbsolute",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\MembraneInstancesProject.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_membraneinstances_membraneinstancesproject_localpathparts",
+      "label": "localPathParts",
       "file_type": "code",
       "source_file": "plugins\\MyPlugins\\MembraneInstances\\MembraneInstancesProject.m",
       "source_location": null,
@@ -34697,6 +34983,17 @@
     {
       "id": "plugins_myplugins_membraneinstances_tests_membranefragmentstest_getpool",
       "label": "getPool",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneFragmentsTest.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_membraneinstances_tests_membranefragmentstest_makedriftingframe",
+      "label": "makeDriftingFrame",
       "file_type": "code",
       "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneFragmentsTest.m",
       "source_location": null,
@@ -34827,6 +35124,17 @@
       "contributor": null
     },
     {
+      "id": "plugins_myplugins_membraneinstances_tests_membranefragmentstest_theplanonapoolcountstheclient",
+      "label": "thePlanOnAPoolCountsTheClient",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneFragmentsTest.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "plugins_myplugins_membraneinstances_tests_membranefragmentstest_toosmallforblocksstaysinonepiece",
       "label": "tooSmallForBlocksStaysInOnePiece",
       "file_type": "code",
@@ -34862,6 +35170,94 @@
     {
       "id": "plugins_myplugins_membraneinstances_tests_membranefragmentstest_enoughmemorykeepsonepiecewithoutpool",
       "label": "enoughMemoryKeepsOnePieceWithoutPool",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneFragmentsTest.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_membraneinstances_tests_membranefragmentstest_storeroutegivesthefragmentsofthearray",
+      "label": "storeRouteGivesTheFragmentsOfTheArray",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneFragmentsTest.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_membraneinstances_tests_membranefragmentstest_plantilescoverthevolumeonce",
+      "label": "planTilesCoverTheVolumeOnce",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneFragmentsTest.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_membraneinstances_tests_membranefragmentstest_readhalotilegivesthepaddedbox",
+      "label": "readHaloTileGivesThePaddedBox",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneFragmentsTest.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_membraneinstances_tests_membranefragmentstest_facesdonotdependonthetiles",
+      "label": "facesDoNotDependOnTheTiles",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneFragmentsTest.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_membraneinstances_tests_membranefragmentstest_labelfragmentsdoesnotdependonthetiles",
+      "label": "labelFragmentsDoesNotDependOnTheTiles",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneFragmentsTest.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_membraneinstances_tests_membranefragmentstest_assignbox",
+      "label": "assignBox",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneFragmentsTest.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_membraneinstances_tests_membranefragmentstest_fragmentblocksdonotdependonthetiles",
+      "label": "fragmentBlocksDoNotDependOnTheTiles",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneFragmentsTest.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_membraneinstances_tests_membranefragmentstest_storerouteofavolumewithoutfragments",
+      "label": "storeRouteOfAVolumeWithoutFragments",
       "file_type": "code",
       "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneFragmentsTest.m",
       "source_location": null,
@@ -34948,6 +35344,17 @@
       "contributor": null
     },
     {
+      "id": "plugins_myplugins_membraneinstances_tests_membranefragmentstest_apointseedonaslopegivesitsnumbertoitshost",
+      "label": "aPointSeedOnASlopeGivesItsNumberToItsHost",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneFragmentsTest.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "plugins_myplugins_membraneinstances_tests_membranefragmentstest_onlyseededcellsarekeptandanumberisoneobject",
       "label": "onlySeededCellsAreKeptAndANumberIsOneObject",
       "file_type": "code",
@@ -34961,6 +35368,17 @@
     {
       "id": "plugins_myplugins_membraneinstances_tests_membranefragmentstest_backgroundseedisleftoutoftheresult",
       "label": "backgroundSeedIsLeftOutOfTheResult",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneFragmentsTest.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_membraneinstances_tests_membranefragmentstest_maxcellvoxelsstopsacellfromtakingthespacearound",
+      "label": "maxCellVoxelsStopsACellFromTakingTheSpaceAround",
       "file_type": "code",
       "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneFragmentsTest.m",
       "source_location": null,
@@ -35102,6 +35520,50 @@
       "contributor": null
     },
     {
+      "id": "plugins_myplugins_membraneinstances_tests_membranefragmentstest_excludedframeisnopartofanycell",
+      "label": "excludedFrameIsNoPartOfAnyCell",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneFragmentsTest.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_membraneinstances_tests_membranefragmentstest_excludedstripgetsnoface",
+      "label": "excludedStripGetsNoFace",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneFragmentsTest.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_membraneinstances_tests_membranefragmentstest_seedinsidetheexcludedareaisdropped",
+      "label": "seedInsideTheExcludedAreaIsDropped",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneFragmentsTest.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_membraneinstances_tests_membranefragmentstest_blocksandstepskeeptheexcludedarea",
+      "label": "blocksAndStepsKeepTheExcludedArea",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneFragmentsTest.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "plugins_myplugins_membraneinstances_tests_membranefragmentstest_smallobjectisnotgiventoanotherseed",
       "label": "smallObjectIsNotGivenToAnotherSeed",
       "file_type": "code",
@@ -35146,6 +35608,17 @@
       "contributor": null
     },
     {
+      "id": "plugins_myplugins_membraneinstances_tests_membranefragmentstest_localstepswithstore",
+      "label": "localStepsWithStore",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneFragmentsTest.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_m",
       "label": "MembraneInstancesTest.m",
       "file_type": "code",
@@ -35159,6 +35632,17 @@
     {
       "id": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_addpaths",
       "label": "addPaths",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneInstancesTest.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_removeprojects",
+      "label": "removeProjects",
       "file_type": "code",
       "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneInstancesTest.m",
       "source_location": null,
@@ -35203,6 +35687,17 @@
     {
       "id": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_batchoptions",
       "label": "batchOptions",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneInstancesTest.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_projectroot",
+      "label": "projectRoot",
       "file_type": "code",
       "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneInstancesTest.m",
       "source_location": null,
@@ -35608,6 +36103,17 @@
       "contributor": null
     },
     {
+      "id": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_jumptopreviousreturnstotheviewbeforethejumps",
+      "label": "jumpToPreviousReturnsToTheViewBeforeTheJumps",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneInstancesTest.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_remapidsgivestheobjectsthenumbersoftheseeds",
       "label": "remapIdsGivesTheObjectsTheNumbersOfTheSeeds",
       "file_type": "code",
@@ -35916,6 +36422,39 @@
       "contributor": null
     },
     {
+      "id": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_abigdatahighlightstaysattheshownlevels",
+      "label": "aBigDataHighlightStaysAtTheShownLevels",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneInstancesTest.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_abigdatacontaineriscorrectedattheleveloftheresult",
+      "label": "aBigDataContainerIsCorrectedAtTheLevelOfTheResult",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneInstancesTest.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_theresultofaleveliswrittenatfullresolution",
+      "label": "theResultOfALevelIsWrittenAtFullResolution",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneInstancesTest.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_bigdatacontainersarereadattheirlevel",
       "label": "bigDataContainersAreReadAtTheirLevel",
       "file_type": "code",
@@ -35993,8 +36532,162 @@
       "contributor": null
     },
     {
+      "id": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_themaskofacontainerexcludestheframe",
+      "label": "theMaskOfAContainerExcludesTheFrame",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneInstancesTest.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_themaskofafileexcludestheframe",
+      "label": "theMaskOfAFileExcludesTheFrame",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneInstancesTest.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_theprojectrememberstheexcludedareas",
+      "label": "theProjectRemembersTheExcludedAreas",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneInstancesTest.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_thewhiteedgeoftheimageisexcluded",
+      "label": "theWhiteEdgeOfTheImageIsExcluded",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneInstancesTest.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_theblackedgeandthe16bitwhiteedge",
+      "label": "theBlackEdgeAndThe16BitWhiteEdge",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneInstancesTest.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_theedgereadergivestheframeofanybox",
+      "label": "theEdgeReaderGivesTheFrameOfAnyBox",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneInstancesTest.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_thewhiteedgeofazarrimage",
+      "label": "theWhiteEdgeOfAZarrImage",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneInstancesTest.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_thewhiteedgeofastorereadintiles",
+      "label": "theWhiteEdgeOfAStoreReadInTiles",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneInstancesTest.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_theedgeneedsanimage",
+      "label": "theEdgeNeedsAnImage",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneInstancesTest.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_amaskofanothersizeisrefused",
+      "label": "aMaskOfAnotherSizeIsRefused",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneInstancesTest.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
       "id": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_generatewritestheproject",
       "label": "generateWritesTheProject",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneInstancesTest.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_theprojectisafileinitsfolder",
+      "label": "theProjectIsAFileInItsFolder",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneInstancesTest.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_thepathsofthedatasetsarerelativetotheprojectfile",
+      "label": "thePathsOfTheDatasetsAreRelativeToTheProjectFile",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneInstancesTest.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_arenamedprojectfileisfound",
+      "label": "aRenamedProjectFileIsFound",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneInstancesTest.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_aprojectwiththeoldprojectjsonopens",
+      "label": "aProjectWithTheOldProjectJsonOpens",
       "file_type": "code",
       "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneInstancesTest.m",
       "source_location": null,
@@ -36039,6 +36732,72 @@
     {
       "id": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_modelstoreiswrittenslabbyslabfromthetable",
       "label": "modelStoreIsWrittenSlabBySlabFromTheTable",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneInstancesTest.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_amodelstoreiswrittenintilesofapartofthexy",
+      "label": "aModelStoreIsWrittenInTilesOfAPartOfTheXY",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneInstancesTest.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_counttiles",
+      "label": "countTiles",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneInstancesTest.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_countedwrite",
+      "label": "countedWrite",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneInstancesTest.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_abatchrunneedsaprojectandmemoryforitsresult",
+      "label": "aBatchRunNeedsAProjectAndMemoryForItsResult",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneInstancesTest.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_everyrunkeepsthefragmentsintheproject",
+      "label": "everyRunKeepsTheFragmentsInTheProject",
+      "file_type": "code",
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneInstancesTest.m",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_facekeysareexactforanyfragmentnumber",
+      "label": "faceKeysAreExactForAnyFragmentNumber",
       "file_type": "code",
       "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneInstancesTest.m",
       "source_location": null,
@@ -41957,6 +42716,16 @@
     },
     {
       "source": "controllers_graphcut_graphcut_m",
+      "target": "controllers_graphcut_graphcut_helpbtn_callback",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@Graphcut\\Graphcut.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_graphcut_graphcut_m",
       "target": "controllers_graphcut_graphcut_closewindow",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -42138,6 +42907,16 @@
     {
       "source": "controllers_graphcut_graphcut_m",
       "target": "controllers_graphcut_graphcut_recalcgraph_callback",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@Graphcut\\Graphcut.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_graphcut_graphcut_m",
+      "target": "controllers_graphcut_graphcut_weightbycontactcheck_callback",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -58357,6 +59136,16 @@
     },
     {
       "source": "plugins_myplugins_membraneinstances_membraneinstances_membraneinstances_m",
+      "target": "plugins_myplugins_membraneinstances_membraneinstances_destinationoptions_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\@MembraneInstances\\MembraneInstances.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_membraneinstances_membraneinstances_m",
       "target": "plugins_myplugins_membraneinstances_membraneinstances_editridgetable_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -58448,6 +59237,16 @@
     {
       "source": "plugins_myplugins_membraneinstances_membraneinstances_membraneinstances_m",
       "target": "plugins_myplugins_membraneinstances_membraneinstances_joinridge_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\@MembraneInstances\\MembraneInstances.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_membraneinstances_membraneinstances_m",
+      "target": "plugins_myplugins_membraneinstances_membraneinstances_jumptoprevious_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -58788,6 +59587,16 @@
     {
       "source": "plugins_myplugins_membraneinstances_membraneinstances_membraneinstances_m",
       "target": "plugins_myplugins_membraneinstances_membraneinstances_writefragmentbox_m",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\@MembraneInstances\\MembraneInstances.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_membraneinstances_membraneinstances_m",
+      "target": "plugins_myplugins_membraneinstances_membraneinstances_writefullresolution_m",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -59257,6 +60066,26 @@
     },
     {
       "source": "plugins_myplugins_membraneinstances_membraneinstances_membraneinstances_m",
+      "target": "plugins_myplugins_membraneinstances_membraneinstances_membraneinstances_getexcludemask",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\@MembraneInstances\\MembraneInstances.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_membraneinstances_membraneinstances_m",
+      "target": "plugins_myplugins_membraneinstances_membraneinstances_membraneinstances_maskfilesize",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\@MembraneInstances\\MembraneInstances.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_membraneinstances_membraneinstances_m",
       "target": "plugins_myplugins_membraneinstances_membraneinstances_membraneinstances_showstatus",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -59287,7 +60116,57 @@
     },
     {
       "source": "plugins_myplugins_membraneinstances_membraneinstances_membraneinstances_m",
-      "target": "plugins_myplugins_membraneinstances_membraneinstances_membraneinstances_selectprojectfolderbutton",
+      "target": "plugins_myplugins_membraneinstances_membraneinstances_membraneinstances_selectprojectfilebutton",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\@MembraneInstances\\MembraneInstances.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_membraneinstances_membraneinstances_m",
+      "target": "plugins_myplugins_membraneinstances_membraneinstances_membraneinstances_choosenewprojectfile",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\@MembraneInstances\\MembraneInstances.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_membraneinstances_membraneinstances_m",
+      "target": "plugins_myplugins_membraneinstances_membraneinstances_membraneinstances_projectfiletyped",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\@MembraneInstances\\MembraneInstances.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_membraneinstances_membraneinstances_m",
+      "target": "plugins_myplugins_membraneinstances_membraneinstances_membraneinstances_projectfilepath",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\@MembraneInstances\\MembraneInstances.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_membraneinstances_membraneinstances_m",
+      "target": "plugins_myplugins_membraneinstances_membraneinstances_membraneinstances_projectfieldname",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\@MembraneInstances\\MembraneInstances.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_membraneinstances_membraneinstances_m",
+      "target": "plugins_myplugins_membraneinstances_membraneinstances_membraneinstances_projectstartfolder",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -59417,6 +60296,16 @@
     },
     {
       "source": "plugins_myplugins_membraneinstances_membraneinstances_membraneinstances_m",
+      "target": "plugins_myplugins_membraneinstances_membraneinstances_membraneinstances_cappedcellstext",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\@MembraneInstances\\MembraneInstances.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_membraneinstances_membraneinstances_m",
       "target": "plugins_myplugins_membraneinstances_membraneinstances_membraneinstances_reportproblem",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -59498,6 +60387,26 @@
     {
       "source": "plugins_myplugins_membraneinstances_membraneinstances_membraneinstances_m",
       "target": "plugins_myplugins_membraneinstances_membraneinstances_membraneinstances_localpressbutton",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\@MembraneInstances\\MembraneInstances.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_membraneinstances_membraneinstances_m",
+      "target": "plugins_myplugins_membraneinstances_membraneinstances_membraneinstances_localframevalue",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\@MembraneInstances\\MembraneInstances.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_membraneinstances_membraneinstances_m",
+      "target": "plugins_myplugins_membraneinstances_membraneinstances_membraneinstances_localunpackframe",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -64107,6 +65016,16 @@
     },
     {
       "source": "utils_dlgs_selectmodeltypedlg_m",
+      "target": "utils_dlgs_selectmodeltypedlg_typeofbutton",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+utils\\+dlgs\\selectModelTypeDlg.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "utils_dlgs_selectmodeltypedlg_m",
       "target": "utils_dlgs_selectmodeltypedlg_onselectionchanged",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -67867,6 +68786,46 @@
     },
     {
       "source": "plugins_myplugins_membraneinstances_membraneinstancesproject_m",
+      "target": "plugins_myplugins_membraneinstances_membraneinstancesproject_locate",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\MembraneInstancesProject.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_membraneinstancesproject_m",
+      "target": "plugins_myplugins_membraneinstances_membraneinstancesproject_datanames",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\MembraneInstancesProject.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_membraneinstancesproject_m",
+      "target": "plugins_myplugins_membraneinstances_membraneinstancesproject_projectfilesin",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\MembraneInstancesProject.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_membraneinstancesproject_m",
+      "target": "plugins_myplugins_membraneinstances_membraneinstancesproject_folderof",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\MembraneInstancesProject.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_membraneinstancesproject_m",
       "target": "plugins_myplugins_membraneinstances_membraneinstancesproject_isproject",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -68037,6 +68996,46 @@
     },
     {
       "source": "plugins_myplugins_membraneinstances_membraneinstancesproject_m",
+      "target": "plugins_myplugins_membraneinstances_membraneinstancesproject_mapinfopaths",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\MembraneInstancesProject.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_membraneinstancesproject_m",
+      "target": "plugins_myplugins_membraneinstances_membraneinstancesproject_relativepath",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\MembraneInstancesProject.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_membraneinstancesproject_m",
+      "target": "plugins_myplugins_membraneinstances_membraneinstancesproject_absolutepath",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\MembraneInstancesProject.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_membraneinstancesproject_m",
+      "target": "plugins_myplugins_membraneinstances_membraneinstancesproject_describefiles",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\MembraneInstancesProject.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_membraneinstancesproject_m",
       "target": "plugins_myplugins_membraneinstances_membraneinstancesproject_savereplacing",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -68048,6 +69047,26 @@
     {
       "source": "plugins_myplugins_membraneinstances_membraneinstancesproject_m",
       "target": "plugins_myplugins_membraneinstances_membraneinstancesproject_timestamp",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\MembraneInstancesProject.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_membraneinstancesproject_m",
+      "target": "plugins_myplugins_membraneinstances_membraneinstancesproject_localisabsolute",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\MembraneInstancesProject.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_membraneinstancesproject_m",
+      "target": "plugins_myplugins_membraneinstances_membraneinstancesproject_localpathparts",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -68118,6 +69137,16 @@
     {
       "source": "plugins_myplugins_membraneinstances_tests_membranefragmentstest_m",
       "target": "plugins_myplugins_membraneinstances_tests_membranefragmentstest_getpool",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneFragmentsTest.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_tests_membranefragmentstest_m",
+      "target": "plugins_myplugins_membraneinstances_tests_membranefragmentstest_makedriftingframe",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -68237,6 +69266,16 @@
     },
     {
       "source": "plugins_myplugins_membraneinstances_tests_membranefragmentstest_m",
+      "target": "plugins_myplugins_membraneinstances_tests_membranefragmentstest_theplanonapoolcountstheclient",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneFragmentsTest.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_tests_membranefragmentstest_m",
       "target": "plugins_myplugins_membraneinstances_tests_membranefragmentstest_toosmallforblocksstaysinonepiece",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -68268,6 +69307,86 @@
     {
       "source": "plugins_myplugins_membraneinstances_tests_membranefragmentstest_m",
       "target": "plugins_myplugins_membraneinstances_tests_membranefragmentstest_enoughmemorykeepsonepiecewithoutpool",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneFragmentsTest.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_tests_membranefragmentstest_m",
+      "target": "plugins_myplugins_membraneinstances_tests_membranefragmentstest_storeroutegivesthefragmentsofthearray",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneFragmentsTest.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_tests_membranefragmentstest_m",
+      "target": "plugins_myplugins_membraneinstances_tests_membranefragmentstest_plantilescoverthevolumeonce",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneFragmentsTest.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_tests_membranefragmentstest_m",
+      "target": "plugins_myplugins_membraneinstances_tests_membranefragmentstest_readhalotilegivesthepaddedbox",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneFragmentsTest.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_tests_membranefragmentstest_m",
+      "target": "plugins_myplugins_membraneinstances_tests_membranefragmentstest_facesdonotdependonthetiles",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneFragmentsTest.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_tests_membranefragmentstest_m",
+      "target": "plugins_myplugins_membraneinstances_tests_membranefragmentstest_labelfragmentsdoesnotdependonthetiles",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneFragmentsTest.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_tests_membranefragmentstest_m",
+      "target": "plugins_myplugins_membraneinstances_tests_membranefragmentstest_assignbox",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneFragmentsTest.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_tests_membranefragmentstest_m",
+      "target": "plugins_myplugins_membraneinstances_tests_membranefragmentstest_fragmentblocksdonotdependonthetiles",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneFragmentsTest.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_tests_membranefragmentstest_m",
+      "target": "plugins_myplugins_membraneinstances_tests_membranefragmentstest_storerouteofavolumewithoutfragments",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -68347,6 +69466,16 @@
     },
     {
       "source": "plugins_myplugins_membraneinstances_tests_membranefragmentstest_m",
+      "target": "plugins_myplugins_membraneinstances_tests_membranefragmentstest_apointseedonaslopegivesitsnumbertoitshost",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneFragmentsTest.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_tests_membranefragmentstest_m",
       "target": "plugins_myplugins_membraneinstances_tests_membranefragmentstest_onlyseededcellsarekeptandanumberisoneobject",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -68358,6 +69487,16 @@
     {
       "source": "plugins_myplugins_membraneinstances_tests_membranefragmentstest_m",
       "target": "plugins_myplugins_membraneinstances_tests_membranefragmentstest_backgroundseedisleftoutoftheresult",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneFragmentsTest.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_tests_membranefragmentstest_m",
+      "target": "plugins_myplugins_membraneinstances_tests_membranefragmentstest_maxcellvoxelsstopsacellfromtakingthespacearound",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -68487,6 +69626,46 @@
     },
     {
       "source": "plugins_myplugins_membraneinstances_tests_membranefragmentstest_m",
+      "target": "plugins_myplugins_membraneinstances_tests_membranefragmentstest_excludedframeisnopartofanycell",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneFragmentsTest.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_tests_membranefragmentstest_m",
+      "target": "plugins_myplugins_membraneinstances_tests_membranefragmentstest_excludedstripgetsnoface",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneFragmentsTest.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_tests_membranefragmentstest_m",
+      "target": "plugins_myplugins_membraneinstances_tests_membranefragmentstest_seedinsidetheexcludedareaisdropped",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneFragmentsTest.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_tests_membranefragmentstest_m",
+      "target": "plugins_myplugins_membraneinstances_tests_membranefragmentstest_blocksandstepskeeptheexcludedarea",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneFragmentsTest.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_tests_membranefragmentstest_m",
       "target": "plugins_myplugins_membraneinstances_tests_membranefragmentstest_smallobjectisnotgiventoanotherseed",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -68526,8 +69705,28 @@
       "weight": 1.0
     },
     {
+      "source": "plugins_myplugins_membraneinstances_tests_membranefragmentstest_m",
+      "target": "plugins_myplugins_membraneinstances_tests_membranefragmentstest_localstepswithstore",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneFragmentsTest.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_m",
       "target": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_addpaths",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneInstancesTest.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_m",
+      "target": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_removeprojects",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -68568,6 +69767,16 @@
     {
       "source": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_m",
       "target": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_batchoptions",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneInstancesTest.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_m",
+      "target": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_projectroot",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -68937,6 +70146,16 @@
     },
     {
       "source": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_m",
+      "target": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_jumptopreviousreturnstotheviewbeforethejumps",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneInstancesTest.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_m",
       "target": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_remapidsgivestheobjectsthenumbersoftheseeds",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -69217,6 +70436,36 @@
     },
     {
       "source": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_m",
+      "target": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_abigdatahighlightstaysattheshownlevels",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneInstancesTest.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_m",
+      "target": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_abigdatacontaineriscorrectedattheleveloftheresult",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneInstancesTest.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_m",
+      "target": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_theresultofaleveliswrittenatfullresolution",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneInstancesTest.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_m",
       "target": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_bigdatacontainersarereadattheirlevel",
       "relation": "contains",
       "confidence": "EXTRACTED",
@@ -69287,7 +70536,147 @@
     },
     {
       "source": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_m",
+      "target": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_themaskofacontainerexcludestheframe",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneInstancesTest.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_m",
+      "target": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_themaskofafileexcludestheframe",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneInstancesTest.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_m",
+      "target": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_theprojectrememberstheexcludedareas",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneInstancesTest.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_m",
+      "target": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_thewhiteedgeoftheimageisexcluded",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneInstancesTest.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_m",
+      "target": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_theblackedgeandthe16bitwhiteedge",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneInstancesTest.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_m",
+      "target": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_theedgereadergivestheframeofanybox",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneInstancesTest.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_m",
+      "target": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_thewhiteedgeofazarrimage",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneInstancesTest.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_m",
+      "target": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_thewhiteedgeofastorereadintiles",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneInstancesTest.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_m",
+      "target": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_theedgeneedsanimage",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneInstancesTest.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_m",
+      "target": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_amaskofanothersizeisrefused",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneInstancesTest.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_m",
       "target": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_generatewritestheproject",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneInstancesTest.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_m",
+      "target": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_theprojectisafileinitsfolder",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneInstancesTest.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_m",
+      "target": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_thepathsofthedatasetsarerelativetotheprojectfile",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneInstancesTest.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_m",
+      "target": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_arenamedprojectfileisfound",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneInstancesTest.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_m",
+      "target": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_aprojectwiththeoldprojectjsonopens",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -69328,6 +70717,66 @@
     {
       "source": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_m",
       "target": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_modelstoreiswrittenslabbyslabfromthetable",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneInstancesTest.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_m",
+      "target": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_amodelstoreiswrittenintilesofapartofthexy",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneInstancesTest.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_m",
+      "target": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_counttiles",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneInstancesTest.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_m",
+      "target": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_countedwrite",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneInstancesTest.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_m",
+      "target": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_abatchrunneedsaprojectandmemoryforitsresult",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneInstancesTest.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_m",
+      "target": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_everyrunkeepsthefragmentsintheproject",
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\tests\\MembraneInstancesTest.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_m",
+      "target": "plugins_myplugins_membraneinstances_tests_membraneinstancestest_facekeysareexactforanyfragmentnumber",
       "relation": "contains",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -83647,6 +85096,16 @@
     },
     {
       "source": "core_mibdataset_cropdataset_m",
+      "target": "core_mibdataset_convertmodel_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "+core\\@MibDataset\\cropDataset.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "core_mibdataset_cropdataset_m",
       "target": "core_mibdataset_updateboundingbox_m",
       "relation": "calls",
       "confidence": "INFERRED",
@@ -87166,6 +88625,26 @@
       "weight": 1.0
     },
     {
+      "source": "plugins_myplugins_membraneinstances_membraneinstances_destinationoptions_m",
+      "target": "plugins_myplugins_membraneinstances_membraneinstances_fragmentgridsize_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\@MembraneInstances\\destinationOptions.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_membraneinstances_destinationoptions_m",
+      "target": "plugins_myplugins_membraneinstances_membraneinstances_membraneinstances_containersize",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\@MembraneInstances\\destinationOptions.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "plugins_myplugins_membraneinstances_membraneinstances_editridgetable_m",
       "target": "plugins_myplugins_membraneinstances_membraneinstances_releaseridgehighlight_m",
       "relation": "calls",
@@ -87317,6 +88796,16 @@
     },
     {
       "source": "plugins_myplugins_membraneinstances_membraneinstances_generateinstances_m",
+      "target": "io_zarr_array_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\@MembraneInstances\\generateInstances.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_membraneinstances_generateinstances_m",
       "target": "core_toggleeventdata_toggleeventdata_m",
       "relation": "calls",
       "confidence": "INFERRED",
@@ -87377,7 +88866,37 @@
     },
     {
       "source": "plugins_myplugins_membraneinstances_membraneinstances_generateinstances_m",
+      "target": "plugins_myplugins_membraneinstances_membraneinstances_membraneinstances_choosenewprojectfile",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\@MembraneInstances\\generateInstances.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_membraneinstances_generateinstances_m",
       "target": "plugins_myplugins_membraneinstances_membraneinstances_membraneinstances_updatewidgets",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\@MembraneInstances\\generateInstances.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_membraneinstances_generateinstances_m",
+      "target": "plugins_myplugins_membraneinstances_membraneinstances_membraneinstances_projectfilepath",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\@MembraneInstances\\generateInstances.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_membraneinstances_generateinstances_m",
+      "target": "plugins_myplugins_membraneinstances_membraneinstances_membraneinstances_selectfile",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -87408,6 +88927,16 @@
     {
       "source": "plugins_myplugins_membraneinstances_membraneinstances_generateinstances_m",
       "target": "plugins_myplugins_membraneinstances_membraneinstances_membraneinstances_guifigure",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\@MembraneInstances\\generateInstances.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_membraneinstances_generateinstances_m",
+      "target": "plugins_myplugins_membraneinstances_membraneinstances_membraneinstances_getexcludemask",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -87507,6 +89036,16 @@
     },
     {
       "source": "plugins_myplugins_membraneinstances_membraneinstances_generateinstances_m",
+      "target": "plugins_myplugins_membraneinstances_membraneinstances_membraneinstances_cappedcellstext",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\@MembraneInstances\\generateInstances.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_membraneinstances_generateinstances_m",
       "target": "plugins_myplugins_membraneinstances_membraneinstances_membraneinstances_rememberparameters",
       "relation": "calls",
       "confidence": "INFERRED",
@@ -87532,6 +89071,16 @@
       "confidence": "INFERRED",
       "confidence_score": 0.75,
       "source_file": "plugins\\MyPlugins\\MembraneInstances\\@MembraneInstances\\generateInstances.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_membraneinstances_gotoridge_m",
+      "target": "plugins_myplugins_membraneinstances_membraneinstances_destinationoptions_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\@MembraneInstances\\goToRidge.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -87576,6 +89125,16 @@
       "weight": 1.0
     },
     {
+      "source": "plugins_myplugins_membraneinstances_membraneinstances_gotoseed_m",
+      "target": "plugins_myplugins_membraneinstances_membraneinstances_destinationoptions_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\@MembraneInstances\\goToSeed.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "plugins_myplugins_membraneinstances_membraneinstances_highlightridge_m",
       "target": "plugins_myplugins_membraneinstances_membraneinstances_fragmentgridsize_m",
       "relation": "calls",
@@ -87598,6 +89157,26 @@
     {
       "source": "plugins_myplugins_membraneinstances_membraneinstances_highlightridge_m",
       "target": "plugins_myplugins_membraneinstances_membraneinstances_readfragmentbox_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\@MembraneInstances\\highlightRidge.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_membraneinstances_highlightridge_m",
+      "target": "plugins_myplugins_membraneinstances_membraneinstances_destinationoptions_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\@MembraneInstances\\highlightRidge.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_membraneinstances_highlightridge_m",
+      "target": "plugins_myplugins_membraneinstances_membraneinstances_releaseridgehighlight_m",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -87662,6 +89241,16 @@
       "confidence": "INFERRED",
       "confidence_score": 0.75,
       "source_file": "plugins\\MyPlugins\\MembraneInstances\\@MembraneInstances\\joinRidge.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_membraneinstances_jumptoprevious_m",
+      "target": "plugins_myplugins_membraneinstances_membraneinstances_membraneinstances_showstatus",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\@MembraneInstances\\jumpToPrevious.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -87758,6 +89347,16 @@
     {
       "source": "plugins_myplugins_membraneinstances_membraneinstances_openproject_m",
       "target": "plugins_myplugins_membraneinstances_membraneinstances_flushtablesave_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\@MembraneInstances\\openProject.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_membraneinstances_openproject_m",
+      "target": "plugins_myplugins_membraneinstances_membraneinstances_membraneinstances_projectstartfolder",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -87887,6 +89486,16 @@
     },
     {
       "source": "plugins_myplugins_membraneinstances_membraneinstances_paintpending_m",
+      "target": "plugins_myplugins_membraneinstances_membraneinstances_destinationoptions_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\@MembraneInstances\\paintPending.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_membraneinstances_paintpending_m",
       "target": "plugins_myplugins_membraneinstances_membraneinstances_readfragmentbox_m",
       "relation": "calls",
       "confidence": "INFERRED",
@@ -87987,6 +89596,16 @@
     },
     {
       "source": "plugins_myplugins_membraneinstances_membraneinstances_pickridge_m",
+      "target": "plugins_myplugins_membraneinstances_membraneinstances_destinationoptions_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\@MembraneInstances\\pickRidge.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_membraneinstances_pickridge_m",
       "target": "plugins_myplugins_membraneinstances_membraneinstances_highlightridge_m",
       "relation": "calls",
       "confidence": "INFERRED",
@@ -88007,7 +89626,7 @@
     },
     {
       "source": "plugins_myplugins_membraneinstances_membraneinstances_pickridge_m",
-      "target": "plugins_myplugins_membraneinstances_membraneinstances_releaseridgehighlight_m",
+      "target": "plugins_myplugins_membraneinstances_membraneinstances_membraneinstances_ridgepicks",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -88017,7 +89636,7 @@
     },
     {
       "source": "plugins_myplugins_membraneinstances_membraneinstances_pickridge_m",
-      "target": "plugins_myplugins_membraneinstances_membraneinstances_membraneinstances_ridgepicks",
+      "target": "plugins_myplugins_membraneinstances_membraneinstances_releaseridgehighlight_m",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -88118,6 +89737,16 @@
     {
       "source": "plugins_myplugins_membraneinstances_membraneinstances_previewwatershed_m",
       "target": "plugins_myplugins_membraneinstances_membraneinstances_membraneinstances_readseedregion",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\@MembraneInstances\\previewWatershed.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_membraneinstances_previewwatershed_m",
+      "target": "plugins_myplugins_membraneinstances_membraneinstances_membraneinstances_getexcludemask",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -88627,6 +90256,16 @@
     },
     {
       "source": "plugins_myplugins_membraneinstances_membraneinstances_ridgebuttondown_m",
+      "target": "plugins_myplugins_membraneinstances_membraneinstances_destinationoptions_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\@MembraneInstances\\ridgeButtonDown.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_membraneinstances_ridgebuttondown_m",
       "target": "plugins_myplugins_membraneinstances_membraneinstances_pickridge_m",
       "relation": "calls",
       "confidence": "INFERRED",
@@ -88648,6 +90287,16 @@
     {
       "source": "plugins_myplugins_membraneinstances_membraneinstances_ridgeunavailablereason_m",
       "target": "plugins_myplugins_membraneinstances_membraneinstances_fragmentgridsize_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\@MembraneInstances\\ridgeUnavailableReason.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_membraneinstances_ridgeunavailablereason_m",
+      "target": "plugins_myplugins_membraneinstances_membraneinstances_destinationoptions_m",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -88688,6 +90337,16 @@
     {
       "source": "plugins_myplugins_membraneinstances_membraneinstances_saveproject_m",
       "target": "plugins_myplugins_membraneinstances_membraneinstances_membraneinstances_showstatus",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\@MembraneInstances\\saveProject.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_membraneinstances_saveproject_m",
+      "target": "plugins_myplugins_membraneinstances_membraneinstances_membraneinstances_containersize",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -88928,6 +90587,16 @@
     {
       "source": "plugins_myplugins_membraneinstances_membraneinstances_tablefrommodel_m",
       "target": "plugins_myplugins_membraneinstances_membraneinstances_membraneinstances_reportproblem",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\@MembraneInstances\\tableFromModel.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_membraneinstances_tablefrommodel_m",
+      "target": "plugins_myplugins_membraneinstances_membraneinstances_destinationoptions_m",
       "relation": "calls",
       "confidence": "INFERRED",
       "confidence_score": 0.75,
@@ -89256,6 +90925,16 @@
       "weight": 1.0
     },
     {
+      "source": "plugins_myplugins_membraneinstances_membraneinstances_updatemerge_m",
+      "target": "plugins_myplugins_membraneinstances_membraneinstances_membraneinstances_cappedcellstext",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\@MembraneInstances\\updateMerge.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "plugins_myplugins_membraneinstances_membraneinstances_updateridgewidgets_m",
       "target": "plugins_myplugins_membraneinstances_membraneinstances_membraneinstances_cacheisusable",
       "relation": "calls",
@@ -89342,6 +91021,106 @@
       "confidence": "INFERRED",
       "confidence_score": 0.75,
       "source_file": "plugins\\MyPlugins\\MembraneInstances\\@MembraneInstances\\updateRidgeWidgets.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_membraneinstances_writefullresolution_m",
+      "target": "plugins_myplugins_membraneinstances_membraneinstances_ensureridgestate_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\@MembraneInstances\\writeFullResolution.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_membraneinstances_writefullresolution_m",
+      "target": "plugins_myplugins_membraneinstances_membraneinstances_fragmentgridsize_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\@MembraneInstances\\writeFullResolution.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_membraneinstances_writefullresolution_m",
+      "target": "plugins_myplugins_membraneinstances_membraneinstances_membraneinstances_getsource",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\@MembraneInstances\\writeFullResolution.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_membraneinstances_writefullresolution_m",
+      "target": "plugins_myplugins_membraneinstances_membraneinstances_membraneinstances_reportproblem",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\@MembraneInstances\\writeFullResolution.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_membraneinstances_writefullresolution_m",
+      "target": "plugins_myplugins_membraneinstances_membraneinstances_flushtablesave_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\@MembraneInstances\\writeFullResolution.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_membraneinstances_writefullresolution_m",
+      "target": "plugins_myplugins_membraneinstances_membraneinstances_membraneinstances_guifigure",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\@MembraneInstances\\writeFullResolution.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_membraneinstances_writefullresolution_m",
+      "target": "plugins_myplugins_membraneinstances_membraneinstances_membraneinstances_reportcancelled",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\@MembraneInstances\\writeFullResolution.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_membraneinstances_writefullresolution_m",
+      "target": "plugins_myplugins_membraneinstances_membraneinstances_membraneinstances_storereader",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\@MembraneInstances\\writeFullResolution.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_membraneinstances_writefullresolution_m",
+      "target": "plugins_myplugins_membraneinstances_membraneinstances_writelabels_m",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\@MembraneInstances\\writeFullResolution.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_membraneinstances_writefullresolution_m",
+      "target": "plugins_myplugins_membraneinstances_membraneinstances_membraneinstances_showstatus",
+      "relation": "calls",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\@MembraneInstances\\writeFullResolution.m",
       "source_location": null,
       "weight": 1.0
     },
@@ -92948,6 +94727,16 @@
     {
       "source": "controllers_graphcut_graphcut_m",
       "target": "utils_movewindowoutside_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+controllers\\@Graphcut\\Graphcut.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "controllers_graphcut_graphcut_m",
+      "target": "utils_openhelppage_m",
       "relation": "calls",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -100546,6 +102335,16 @@
       "weight": 1.0
     },
     {
+      "source": "core_mibdataset_buildinstanceindex_m",
+      "target": "utils_instances_replaceindexrows_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "+core\\@MibDataset\\buildInstanceIndex.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
       "source": "core_mibdataset_croptobigdata_m",
       "target": "utils_bigdata_processimagetostore_m",
       "relation": "calls",
@@ -103812,6 +105611,26 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "plugins\\MyPlugins\\MembraneInstances\\@MembraneInstances\\updateMerge.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_membraneinstances_updateridgewidgets_m",
+      "target": "utils_themecolors_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\@MembraneInstances\\updateRidgeWidgets.m",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "plugins_myplugins_membraneinstances_membraneinstances_writefullresolution_m",
+      "target": "utils_dlgs_inputquestdlg_m",
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "plugins\\MyPlugins\\MembraneInstances\\@MembraneInstances\\writeFullResolution.m",
       "source_location": null,
       "weight": 1.0
     },
