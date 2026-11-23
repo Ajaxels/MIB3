@@ -10,7 +10,8 @@ classdef selectModelTypeDlg < handle
 % The 16383 radio button is not part of ``views.SelectModelTypeGUI``: it is
 % created in ``initView``, which also grows the figure by one row, so the
 % .mlapp did not have to change. The 1073741823 radio button (packed uint32
-% instance model, BigData only) is created the same way, below 16383, and only
+% instance model, BigData only) is created the same way, between 65535 and
+% 4294967295, and only
 % when ``allowedTypes`` holds it, so the dialog of a Standard dataset keeps its
 % five types.
 %
@@ -109,7 +110,7 @@ classdef selectModelTypeDlg < handle
             %   function modelType = run(obj)
             %
             % Output Arguments:
-            %   - **modelType** - one of {63, 255, 16383, 1073741823, 65535, 4294967295},
+            %   - **modelType** - one of {63, 255, 16383, 65535, 1073741823, 4294967295},
             %     or [] if cancelled
             %
 

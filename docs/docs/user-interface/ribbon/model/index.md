@@ -34,8 +34,8 @@ reducing memory requirements with some performance costs and limiting materials 
 - **16383 materials**: An instance model for up to 16383 objects. As with 63 materials, the Labels, Selection and Mask layers share one memory container, so it needs about half the memory of 65535 materials. The Segmentation panel changes as for 65535 materials. This is the instance model available for [BigData](../../../getting-started/dataset-types/index.md) datasets.
 - **65535 materials**: Allows up to 65535 materials, requiring ~1.25× more memory than 255 materials. The [Segmentation panel](../../panels/segm/index.md) appearance changes in this mode.  
   [:fontawesome-brands-youtube:{.red-color} Short demonstration](https://youtu.be/r3lpmWyvrJU)
-- **4294967295 materials**: Allows up to 4294967295 materials, requiring twice the memory of 65535 materials.
 - **1073741823 materials**: [BigData](../../../getting-started/dataset-types/index.md) only. An instance model for up to 1073741823 objects; the Labels, Selection and Mask layers share one container, so the model store takes twice the disk space of 16383 materials. A Standard model converts to 4294967295 materials instead.
+- **4294967295 materials**: Allows up to 4294967295 materials, requiring twice the memory of 65535 materials.
 
 !!! note "BigData"
     A BigData model converts between **63**, **16383** and **1073741823 materials**. The model is

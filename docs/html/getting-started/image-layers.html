@@ -5724,7 +5724,7 @@
 <p>For visualization, MIB combines all layers to produce the image shown in the <a href="../user-interface/image-document/index.html">Image Document</a>. 
 You can toggle each layer on or off, adjust transparency, and change colors (see the <a href="../user-interface/panels/selection_imview/viewsettings.html">View Settings Panel</a> docs).</p>
 <p><img alt="Schematic of data layers combined into the final image" src="images/dataLayersToFinalImage.jpg" /></p>
-<p>By default, the <strong>Model</strong>, <strong>Mask</strong>, and <strong>Selection</strong> layers share a single memory container, limiting materials to 63 but minimising memory use. MIB supports five model types with increasing material limits and memory costs:</p>
+<p>By default, the <strong>Model</strong>, <strong>Mask</strong>, and <strong>Selection</strong> layers share a single memory container, limiting materials to 63 but minimising memory use. MIB supports these model types with increasing material limits and memory costs:</p>
 <table>
 <thead>
 <tr>
@@ -5758,6 +5758,11 @@ You can toggle each layer on or off, adjust transparency, and change colors (see
 <td><strong>4294967295 materials</strong></td>
 <td style="text-align: center;">~4.3 billion</td>
 <td style="text-align: center;">~5× default</td>
+</tr>
+<tr>
+<td><strong>1073741823 materials</strong> <em>(BigData only)</em></td>
+<td style="text-align: center;">~1.07 billion</td>
+<td style="text-align: center;">~4× default, on disk</td>
 </tr>
 </tbody>
 </table>
