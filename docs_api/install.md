@@ -189,5 +189,5 @@ docs_api/
 ## Docstring format
 
 All MATLAB docblocks use RST format compatible with `sphinxcontrib-matlabdomain`.
-See [`development/guides/docs_api_sphinx.md`](../development/guides/docs_api_sphinx.md) for the
+See [`guides/docs_api_sphinx.md`](../guides/docs_api_sphinx.md) for the
 complete style guide and canonical examples.

@@ -18,9 +18,12 @@ standalone Windows app.
 
 ## Documentation Map
 
-- **[`development/INDEX.md`](development/INDEX.md)** — contents page for all development docs: how-to
-  guides, completed port logs, subsystem folders (`bigdata/`, `deepmib/`, `stitching/`, `graphify/`),
-  notes. **Open it whenever this file is not enough.**
+- **[`guides/`](guides/)** - how-to guides and lookup references, tracked in git; the table below
+  lists the ones to read before a task of that type
+- **[`development/INDEX.md`](development/INDEX.md)** - contents page for the development notes:
+  completed port logs, subsystem folders (`bigdata/`, `deepmib/`, `stitching/`, `graphify/`), notes.
+  Not in git: `development/` is a junction to the author's OneDrive and exists only on the author's
+  workstations. **Open it whenever this file is not enough.**
 - [`docs/CLAUDE.md`](docs/CLAUDE.md) — user docs (Zensical/MkDocs): nav editing, custom elements, build
 - [`docs_api/CLAUDE.md`](docs_api/CLAUDE.md) — API reference (Sphinx/RST): docblock format, build steps
 - [`mib/plugins/plugins_instructions.md`](mib/plugins/plugins_instructions.md) — standalone,
@@ -30,12 +33,12 @@ Read before starting a task of the matching type:
 
 | Task | Read first |
 |------|-----------|
-| Port a GUIDE dialog to AppDesigner | [`guides/appdesigner_guide.md`](development/guides/appdesigner_guide.md) — file layout, widget syntax, constructor, `ViewListner_Callback2`, renames, checklist |
-| Any MIB2 → MIB3 conversion | [`guides/conversion_reference.md`](development/guides/conversion_reference.md) — data structures, get/setData accessors, backup, clearing, bit packing, PoolWaitbar API |
-| UI behaviour (modifiers, coords, shortcuts) | [`guides/conversion_ui.md`](development/guides/conversion_ui.md) |
-| Add a dialog, progress bar or BatchOpt field | [`guides/dialogs_and_batchopt.md`](development/guides/dialogs_and_batchopt.md) |
-| Write or edit documentation | [`guides/documentation_style.md`](development/guides/documentation_style.md) |
-| Write a docblock | [`guides/docs_api_sphinx.md`](development/guides/docs_api_sphinx.md) |
+| Port a GUIDE dialog to AppDesigner | [`guides/appdesigner_guide.md`](guides/appdesigner_guide.md) — file layout, widget syntax, constructor, `ViewListner_Callback2`, renames, checklist |
+| Any MIB2 → MIB3 conversion | [`guides/conversion_reference.md`](guides/conversion_reference.md) — data structures, get/setData accessors, backup, clearing, bit packing, PoolWaitbar API |
+| UI behaviour (modifiers, coords, shortcuts) | [`guides/conversion_ui.md`](guides/conversion_ui.md) |
+| Add a dialog, progress bar or BatchOpt field | [`guides/dialogs_and_batchopt.md`](guides/dialogs_and_batchopt.md) |
+| Write or edit documentation | [`guides/documentation_style.md`](guides/documentation_style.md) |
+| Write a docblock | [`guides/docs_api_sphinx.md`](guides/docs_api_sphinx.md) |
 
 **Rule:** whenever you add, rename, or significantly change a public method or UI feature, update the
 corresponding documentation (`docs/` and/or `docs_api/`).
@@ -71,7 +74,7 @@ each must name its subject, use the screen's words rather than the code's, and s
 instruction ("Do not press X after Y"). Re-read the page as its reader (a biologist new to the
 tool) before finishing - see "Short is not the same as compressed" in the style guide. Nothing is lost by trimming - the docblock takes the edge cases and
 contracts, `development/` the rationale and measurements. Worked examples:
-[`guides/documentation_style.md`](development/guides/documentation_style.md).
+[`guides/documentation_style.md`](guides/documentation_style.md).
 
 ---
 
@@ -167,8 +170,8 @@ Two MIB2 reference copies exist with different roles:
 2. When behavior is unclear or needs verification, check the same method in `MIB2\` (runs correctly)
 3. Apply the conversion rules regardless — `MIB2_RENAMED_FOR_MIB3` renaming is incomplete and
    inconsistent
-4. Open [`guides/appdesigner_guide.md`](development/guides/appdesigner_guide.md) for a full GUI
-   controller port and [`guides/conversion_reference.md`](development/guides/conversion_reference.md)
+4. Open [`guides/appdesigner_guide.md`](guides/appdesigner_guide.md) for a full GUI
+   controller port and [`guides/conversion_reference.md`](guides/conversion_reference.md)
    for the lookup tables — naming, widget syntax, events, renames and data structures all live there
 
 ### Naming
@@ -202,14 +205,14 @@ key presses never reach `MibController`, whose `currentModifier` would stay empt
 **A BatchOpt widget must be named exactly as its BatchOpt field.** `utils.updateBatchOptFromGUI_Shared`
 writes `BatchOpt.(hObject.Tag)`, so a mismatched handle dumps the value into a junk field and the tool
 runs with defaults. Details and the non-BatchOpt naming convention:
-[`guides/dialogs_and_batchopt.md`](development/guides/dialogs_and_batchopt.md).
+[`guides/dialogs_and_batchopt.md`](guides/dialogs_and_batchopt.md).
 
 **Progress dialogs are always cancelable** — `uiprogressdlg` with `'Cancelable', 'on'`,
 `core.PoolWaitbar` with its 5th argument `true` (it defaults to **false**). Creating it is not enough:
 check `wb.CancelRequested` / `pwb.getCancelState()` at the top of every loop and before every
 irreversible operation, then clean up and return. Return no partial result, and say what was and was
 not done rather than reporting success. Patterns:
-[`guides/dialogs_and_batchopt.md`](development/guides/dialogs_and_batchopt.md).
+[`guides/dialogs_and_batchopt.md`](guides/dialogs_and_batchopt.md).
 
 **Always check `enableSelection` first:** `if obj.mibModel.I{id}.enableSelection == 0; return; end`.
 
@@ -263,7 +266,7 @@ end                                        end
 
 Applies to code **outside** `MibImage` methods (controllers, model helpers). Inside `MibImage`,
 `obj.data` is one hop and already safe — still worth caching for large nested loops. Full background:
-[`guides/performance_for_loop_tweak.md`](development/guides/performance_for_loop_tweak.md).
+[`guides/performance_for_loop_tweak.md`](guides/performance_for_loop_tweak.md).
 
 ## graphify
 

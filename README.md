@@ -33,7 +33,6 @@ mib3
     - current release: https://mib.helsinki.fi/help/api3/index.html
     - nightly version, matching this repository: https://ajaxels.github.io/MIB3/api/ (built
       automatically from `docs_api/` and the docblocks in `mib/` on every push that changes them)
-- Developer notes: `development/INDEX.md`
 
 ## Licence
 

@@ -62,9 +62,10 @@ temp/
 # Compiled standalone build output, regenerated from mib/ by deploymentScript.m
 deployed/
 
-# local notes and correspondence, not for the repository. No trailing slash:
-# the folder may become a directory junction, and "dir/" does not match a link.
-development/private
+# Private development notes, a directory junction to OneDrive on the author's
+# workstations; the public how-to guides are in guides/. No trailing slash: a
+# "dir/" pattern does not match a junction, which git may see as a link.
+development
 
 # Personal and unreleased plugins, also excluded from compiled builds by
 # EXCLUDE_PLUGINS in deployment/deploymentScript_*.m. No trailing slash, as above.

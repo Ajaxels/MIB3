@@ -13,7 +13,7 @@ package versions and copies the patched files from `sphinx/`: when either change
 workflow too.
 
 For the complete RST docblock style guide see
-[`development/guides/docs_api_sphinx.md`](../development/guides/docs_api_sphinx.md).
+[`guides/docs_api_sphinx.md`](../guides/docs_api_sphinx.md).
 
 ---
 
