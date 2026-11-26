@@ -75,6 +75,35 @@ classdef RGBImageTest < matlab.unittest.TestCase
                 'all-black input must produce all-0 RGB output');
         end
 
+        function getRGBimage_overlayAnnotationsAreDrawnApartFromAnnotations(testCase)
+            % MibDataset.overlayAnnotations: drawn whatever showAnnotations, near the shown
+            % slice only, without touching the annotations of the dataset
+            [mibModel, ~] = mibtest.helpers.buildSyntheticModel( ...
+                'modelType', 'labels255', 'dims', [64 64 12]);
+            opt = struct('id', 1, 'blockModeSwitch', 0);
+            mibModel.setData3D(zeros(64, 64, 12, 1, 'uint8'), 'image', 1, 3, [], opt);
+            mibModel.showModel = false;
+            mibModel.showMask  = false;
+            mibModel.showAnnotations = false;
+            mibModel.I{1}.clearLayer('selection');
+
+            places = core.Annotations();
+            places.addLabels({'1'; '2'}, [1 10 12 1; 12 50 50 1]);    % [z x y t]: slice 1, and slice 12 far away
+            mibModel.I{1}.overlayAnnotations = places;
+            [rgb, ~] = mibModel.getRGBimage(RGBImageTest.displayOpt(), 1);
+
+            testCase.verifyGreaterThan(max(rgb(11:13, 9:11, :), [], 'all'), uint8(0), ...
+                'the point of slice 1 is drawn, with Show annotations off');
+            testCase.verifyEqual(max(rgb(48:52, 48:52, :), [], 'all'), uint8(0), ...
+                'the point of slice 12 is beyond the shown depth');
+            testCase.verifyEqual(mibModel.I{1}.annotations.getLabelsNumber(), 0, ...
+                'the annotations of the dataset are not touched');
+
+            mibModel.I{1}.overlayAnnotations = [];
+            [rgb, ~] = mibModel.getRGBimage(RGBImageTest.displayOpt(), 1);
+            testCase.verifyEqual(max(rgb(:)), uint8(0), 'cleared: nothing is drawn');
+        end
+
     end
 
     % =====================================================================

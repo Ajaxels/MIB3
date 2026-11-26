@@ -620,58 +620,22 @@ if obj.showLines3D && dataset.lines3D.noTrees > 0
 end
 
 %% Add annotations overlay
+Annotations = obj.preferences.SegmTools.Annotations;
+if ~isfield(options, 'sliceNo')
+    options.sliceNo = dataset.slices{dataset.orientation}(1);
+end
+% Define depth range to display annotations
+zSlices = [options.sliceNo - Annotations.ShownExtraDepth, ...
+           options.sliceNo + Annotations.ShownExtraDepth];
 if obj.showAnnotations
-    Annotations = obj.preferences.SegmTools.Annotations;
-    
     if dataset.annotations.getLabelsNumber() >= 1
-        if ~isfield(options, 'sliceNo')
-            options.sliceNo = dataset.slices{dataset.orientation}(1);
-        end
-
-        % Define depth range to display annotations
-        zSlices = [options.sliceNo - Annotations.ShownExtraDepth, ...
-                   options.sliceNo + Annotations.ShownExtraDepth];
-
         [labelsList, labelValues, labelPos] = dataset.getSliceLabels(zSlices);
-        if isempty(labelsList); return; end
+    else
+        labelsList = {};
+    end
 
-        % Get coordinate indices based on orientation
-        if orientation == 3 % xy
-            xId = 2;
-            yId = 3;
-        elseif orientation == 1 % zx: horizontal = X, vertical = Z
-            xId = 2;
-            yId = 1;
-        elseif orientation == 2 % zy
-            xId = 1;
-            yId = 3;
-        end
-
-        % Calculate annotation positions
-        if options.blockModeSwitch == 0
-            % Full image mode, or the region requested with .x / .y
-            regionShift = [0 0];
-            if isfield(options, 'x') && ~isempty(options.x); regionShift(1) = options.x(1) - 1; end
-            if isfield(options, 'y') && ~isempty(options.y); regionShift(2) = options.y(1) - 1; end
-            if options.resizeToMagnification
-                pos(:,1) = ceil((labelPos(:, xId) - regionShift(1)) / max([magnificationFactor 1]));
-                pos(:,2) = ceil((labelPos(:, yId) - regionShift(2)) / max([magnificationFactor 1]));
-            else
-                pos(:,1) = ceil(labelPos(:, xId) - regionShift(1));
-                pos(:,2) = ceil(labelPos(:, yId) - regionShift(2));
-            end
-        else
-            % Block mode - adjust for visible area
-            [axesX, axesY] = dataset.getAxesLimits();
-
-            if options.resizeToMagnification
-                pos(:,1) = ceil((labelPos(:, xId) - max([0 floor(axesX(1))])) / magnificationFactor);
-                pos(:,2) = ceil((labelPos(:, yId) - max([0 floor(axesY(1))])) / magnificationFactor);
-            else
-                pos(:,1) = ceil((labelPos(:, xId) - max([0 floor(axesX(1))])));
-                pos(:,2) = ceil((labelPos(:, yId) - max([0 floor(axesY(1))])));
-            end
-        end
+    if ~isempty(labelsList)
+        pos = localLabelPixels(labelPos, dataset, orientation, options, magnificationFactor);
 
         addTextOptions.markerText = options.markerType;
         addTextOptions.color = Annotations.Color;
@@ -694,6 +658,70 @@ if obj.showAnnotations
         end
 
         imgRGB = utils.addText2Img(imgRGB, labelsList, pos, addTextOptions);
+    end
+end
+
+%% Points of a tool (MibDataset.overlayAnnotations): apart from the annotations, always shown
+overlay = dataset.overlayAnnotations;
+if isa(overlay, 'core.Annotations') && overlay.getLabelsNumber() >= 1
+    timePoint = dataset.slices{5}(1);
+    if orientation == 3         % xy; positions are [z x y t]
+        [labelsList, ~, labelPos] = overlay.getLabels(zSlices, NaN, NaN, timePoint);
+    elseif orientation == 1     % zx
+        [labelsList, ~, labelPos] = overlay.getLabels(NaN, NaN, zSlices, timePoint);
+    else                        % zy
+        [labelsList, ~, labelPos] = overlay.getLabels(NaN, zSlices, NaN, timePoint);
+    end
+    if ~isempty(labelsList)
+        pos = localLabelPixels(labelPos, dataset, orientation, options, magnificationFactor);
+        % a yellow cross and the label in yellow on a dark box next to it: readable over the
+        % image, the model and the selection alike, and apart from the annotations, which have
+        % no box; the font size is that of the annotations (addText2Img: index 1-7 to 8-20 pt)
+        imgRGB = insertMarker(imgRGB, pos, 'x-mark', 'Color', 'yellow', 'Size', 5);
+        imgRGB = insertText(imgRGB, pos + 4, labelsList, 'FontSize', 2 * Annotations.FontSize + 6, ...
+            'BoxColor', 'black', 'BoxOpacity', 0.7, 'TextColor', 'yellow');
+    end
+end
+end
+
+function pos = localLabelPixels(labelPos, dataset, orientation, options, magnificationFactor)
+% the pixels of the returned image for label positions [z x y t] of the dataset, for the
+% annotations and for MibDataset.overlayAnnotations
+% Get coordinate indices based on orientation
+if orientation == 3 % xy
+    xId = 2;
+    yId = 3;
+elseif orientation == 1 % zx: horizontal = X, vertical = Z
+    xId = 2;
+    yId = 1;
+else % zy
+    xId = 1;
+    yId = 3;
+end
+pos = zeros(size(labelPos, 1), 2);
+% Calculate annotation positions
+if options.blockModeSwitch == 0
+    % Full image mode, or the region requested with .x / .y
+    regionShift = [0 0];
+    if isfield(options, 'x') && ~isempty(options.x); regionShift(1) = options.x(1) - 1; end
+    if isfield(options, 'y') && ~isempty(options.y); regionShift(2) = options.y(1) - 1; end
+    if options.resizeToMagnification
+        pos(:,1) = ceil((labelPos(:, xId) - regionShift(1)) / max([magnificationFactor 1]));
+        pos(:,2) = ceil((labelPos(:, yId) - regionShift(2)) / max([magnificationFactor 1]));
+    else
+        pos(:,1) = ceil(labelPos(:, xId) - regionShift(1));
+        pos(:,2) = ceil(labelPos(:, yId) - regionShift(2));
+    end
+else
+    % Block mode - adjust for visible area
+    [axesX, axesY] = dataset.getAxesLimits();
+
+    if options.resizeToMagnification
+        pos(:,1) = ceil((labelPos(:, xId) - max([0 floor(axesX(1))])) / magnificationFactor);
+        pos(:,2) = ceil((labelPos(:, yId) - max([0 floor(axesY(1))])) / magnificationFactor);
+    else
+        pos(:,1) = ceil((labelPos(:, xId) - max([0 floor(axesX(1))])));
+        pos(:,2) = ceil((labelPos(:, yId) - max([0 floor(axesY(1))])));
     end
 end
 end

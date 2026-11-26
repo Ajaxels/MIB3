@@ -117,6 +117,19 @@ classdef MibDataset < matlab.mixin.Copyable
         % filename for the movie, used by controllers.MakeMovie; initialized on first open
     end
 
+    properties (Transient)
+        overlayAnnotations = []
+        % Points that a tool draws over the image for its own use, ``[]`` or an instance of
+        % core.Annotations, kept apart from the annotations of the dataset (``annotations``):
+        % shown whatever the state of the Show annotations checkbox, as a yellow cross with the
+        % label in yellow on a dark box, within ``ShownExtraDepth`` slices of the shown one, as the
+        % annotations are (models.MibModel.getRGBimage); not listed in the Annotations tool,
+        % not saved, cropped or resampled. The tool that sets it clears it when it is done
+        % (``[]``) and fires models.MibModel ``ShowImage`` after every change. Positions are
+        % those of core.Annotations: ``[z x y t]`` in voxels of the dataset. Example: the
+        % places clicked for Split fragment of the Membranes to instances plugin
+    end
+
     events
         SetData
         % when the set data method was used

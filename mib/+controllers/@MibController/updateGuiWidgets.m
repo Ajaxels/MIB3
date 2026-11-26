@@ -467,7 +467,7 @@ if isempty(updatePanels) || ismember('dirContentsDataset', updatePanels)
     reader = obj.mibModel.selectedReader;
     if isempty(reader); reader = 'Default'; end
     % reflect the selected reader in the dropdown (guard for the items it offers)
-    if isprop(dirContents.handles, 'reader') || isfield(dirContents.handles, 'reader')
+    if isfield(dirContents.handles, 'reader')
         if ismember(reader, dirContents.handles.reader.Items)
             dirContents.handles.reader.Value = reader;
         end
